@@ -172,6 +172,44 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('userApiKey', key);
     });
 
+    async function generateDirectly(idea, apiKey) {
+        const prompt = `Act as a Project Architect. Create a logical and detailed project structure for the following idea: "${idea}".
+        
+        CRITICAL INSTRUCTIONS:
+        1. Match the NATURE of the project. If it is a school project, use appropriate folders (e.g., research, diagrams, assets) and file types (e.g., .txt, .md, .pdf-placeholder).
+        2. DO NOT assume this is a software development project unless the user mentions coding, apps, or specific programming languages.
+        3. Provide high-quality, realistic starter content for every file created.
+        
+        Return ONLY a raw JSON object with NO markdown, NO backticks.
+        {
+          "projectName": "string",
+          "folders": [ { "name": "string", "files": [ { "name": "string", "content": "string" } ] } ]
+        }`;
+
+        const response = await fetch("https://api.sambanova.ai/v1/chat/completions", {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: "Meta-Llama-3.3-70B-Instruct",
+                messages: [{ role: "user", content: prompt }],
+                temperature: 0.1
+            })
+        });
+
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.error?.message || 'Direct API connection failed');
+        }
+
+        const result = await response.json();
+        let text = result.choices[0].message.content.trim();
+        text = text.replace(/```json/g, "").replace(/```/g, "").trim();
+        return JSON.parse(text);
+    }
+
     // --- Generation Logic ---
     generateBtn.addEventListener('click', async () => {
         const idea = projectIdea.value.trim();
@@ -195,26 +233,31 @@ document.addEventListener('DOMContentLoaded', () => {
         loadingView.classList.remove('hidden');
 
         try {
-            const response = await fetch('/generate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ idea, apiKey })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                currentProjectData = data;
-                saveToHistory(data);
-                if (!apiKey) incrementUsage(); // Only increment if using free shared pool
-                renderResult(data);
+            let data;
+            if (apiKey) {
+                // --- SECURE: DIRECT BROWSER-TO-AI CONNECTION ---
+                console.log('--- Direct Client-Side Request (Secure) ---');
+                data = await generateDirectly(idea, apiKey);
             } else {
-                alert(data.error || 'Something went wrong.');
-                resetView();
+                // --- FREE TIER: SERVER-SIDE RELAY ---
+                console.log('--- Server-Relayed Request (Free Tier) ---');
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idea }) // Note: We do NOT send the apiKey to the server
+                });
+                data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Server error');
             }
+
+            currentProjectData = data;
+            saveToHistory(data);
+            if (!apiKey) incrementUsage();
+            renderResult(data);
+
         } catch (error) {
-            console.error('Fetch error:', error);
-            alert('Failed to connect to backend. Ensure it is running.');
+            console.error('Generation Error:', error);
+            alert(`Error: ${error.message}`);
             resetView();
         }
     });

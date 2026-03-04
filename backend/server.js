@@ -30,14 +30,14 @@ const fallbackTemplate = {
 };
 
 app.post("/generate", limiter, async (req, res) => {
-    const { idea, apiKey: userApiKey } = req.body;
-    const apiKey = (userApiKey || process.env.SAMBANOVA_API_KEY || "").trim();
+    const { idea } = req.body;
+    const apiKey = (process.env.SAMBANOVA_API_KEY || "").trim();
 
-    console.log("--- SambaNova Request ---");
-    console.log(`Idea: ${idea}`);
+    console.log("--- Server-Side (Free Tier) Request ---");
+    console.log(`Processing idea: ${idea.substring(0, 50)}...`);
 
     if (!apiKey) {
-        return res.status(401).json({ error: "API Key is missing." });
+        return res.status(500).json({ error: "Server is not configured with an API key." });
     }
 
     try {
