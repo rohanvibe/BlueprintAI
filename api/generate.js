@@ -42,7 +42,11 @@ module.exports = async (req, res) => {
         Return ONLY a raw JSON object with NO markdown, NO backticks.
         {
           "projectName": "string",
-          "folders": [ { "name": "string", "files": [ { "name": "string", "content": "string" } ] } ]
+          "folders": [ { "name": "string", "files": [ { "name": "string", "content": "string" } ] } ],
+          "roadmap": ["Step 1", "Step 2", "Step 3"],
+          "resources": [ { "label": "Resource Name", "url": "https://..." } ],
+          "presentationTips": ["Tip 1", "Tip 2"],
+          "initialInsight": "Brief expert commentary."
         }`;
 
         const response = await client.chat.completions.create({

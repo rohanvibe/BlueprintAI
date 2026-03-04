@@ -52,6 +52,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const dailyCountDisplay = document.getElementById('daily-count-display');
     const clearHistoryBtn = document.getElementById('clear-history-btn');
 
+    // New Success Features Elements
+    const tabStructure = document.getElementById('tab-structure');
+    const tabRoadmap = document.getElementById('tab-roadmap');
+    const tabPresentation = document.getElementById('tab-presentation');
+    const viewStructure = document.getElementById('view-structure');
+    const viewRoadmap = document.getElementById('view-roadmap');
+    const viewPresentation = document.getElementById('view-presentation');
+
+    const roadmapList = document.getElementById('roadmap-list');
+    const resourceList = document.getElementById('resource-list');
+    const presentationTips = document.getElementById('presentation-tips');
+    const aiInsightBox = document.getElementById('ai-insight-box');
+    const chatInput = document.getElementById('chat-input');
+    const sendChat = document.getElementById('send-chat');
+
     let currentProjectData = null;
 
     // --- State Management ---
@@ -172,6 +187,75 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('userApiKey', key);
     });
 
+    // --- Tab Switching Logic ---
+    const tabs = [tabStructure, tabRoadmap, tabPresentation];
+    const views = [viewStructure, viewRoadmap, viewPresentation];
+
+    function switchTab(activeTab, activeView) {
+        tabs.forEach(t => {
+            t.classList.remove('border-b-2', 'border-primary', 'text-primary');
+            t.classList.add('text-slate-500');
+        });
+        views.forEach(v => v.classList.add('hidden'));
+
+        activeTab.classList.add('border-b-2', 'border-primary', 'text-primary');
+        activeTab.classList.remove('text-slate-500');
+        activeView.classList.remove('hidden');
+    }
+
+    tabStructure.onclick = () => switchTab(tabStructure, viewStructure);
+    tabRoadmap.onclick = () => switchTab(tabRoadmap, viewRoadmap);
+    tabPresentation.onclick = () => switchTab(tabPresentation, viewPresentation);
+
+    // --- Project Assistant Logic ---
+    async function askAssistant(question) {
+        if (!currentProjectData || !question.trim()) return;
+
+        const originalText = sendChat.innerHTML;
+        sendChat.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm">sync</span>';
+        sendChat.disabled = true;
+
+        try {
+            const apiKey = userApiKey.value.trim();
+            const prompt = `You are the BlueprintAI Assistant. I am working on the project "${currentProjectData.projectName}" with this idea: "${projectIdea.value}".
+            User Question: "${question}"
+            Provide a helpful, expert response in 2-3 short sentences.`;
+
+            let responseText = "";
+            if (apiKey) {
+                const response = await fetch("https://api.sambanova.ai/v1/chat/completions", {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: "Meta-Llama-3.3-70B-Instruct",
+                        messages: [{ role: "user", content: prompt }],
+                        temperature: 0.7
+                    })
+                });
+                const result = await response.json();
+                responseText = result.choices[0].message.content.trim();
+            } else {
+                // Fallback for demo or if no key
+                responseText = "To get real-time answers about your project, please add your SambaNova API Key in Settings! I can help you with specific implementation steps or optimization tips once connected.";
+            }
+
+            const bubble = document.createElement('div');
+            bubble.className = 'text-xs bg-primary/10 p-3 rounded-xl border border-primary/20 mt-2 fade-in';
+            bubble.innerHTML = `<strong>You:</strong> ${question}<br><span class="text-slate-300 mt-1 block">${responseText}</span>`;
+            aiInsightBox.appendChild(bubble);
+            aiInsightBox.scrollTop = aiInsightBox.scrollHeight;
+            chatInput.value = '';
+        } catch (e) {
+            console.error(e);
+        } finally {
+            sendChat.innerHTML = originalText;
+            sendChat.disabled = false;
+        }
+    }
+
+    sendChat.onclick = () => askAssistant(chatInput.value);
+    chatInput.onkeydown = (e) => { if (e.key === 'Enter') askAssistant(chatInput.value); };
+
     async function generateDirectly(idea, apiKey) {
         const prompt = `Act as BlueprintAI. Create a logical and detailed project structure for the following idea: "${idea}".
         
@@ -183,7 +267,11 @@ document.addEventListener('DOMContentLoaded', () => {
         Return ONLY a raw JSON object with NO markdown, NO backticks.
         {
           "projectName": "string",
-          "folders": [ { "name": "string", "files": [ { "name": "string", "content": "string" } ] } ]
+          "folders": [ { "name": "string", "files": [ { "name": "string", "content": "string" } ] } ],
+          "roadmap": ["Step 1", "Step 2", "Step 3"],
+          "resources": [ { "label": "Resource Name", "url": "https://..." } ],
+          "presentationTips": ["Tip 1", "Tip 2"],
+          "initialInsight": "Brief expert commentary."
         }`;
 
         const response = await fetch("https://api.sambanova.ai/v1/chat/completions", {
@@ -300,6 +388,55 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Render File Explorer
         renderFileTree(data.folders || []);
+
+        // Render Roadmap
+        roadmapList.innerHTML = '';
+        (data.roadmap || ['Initialize project', 'Develop core components', 'Review and Test']).forEach((step, idx) => {
+            const div = document.createElement('div');
+            div.className = 'flex gap-4 fade-in';
+            div.innerHTML = `
+                <div class="flex flex-col items-center">
+                    <div class="size-8 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary font-bold text-xs">${idx + 1}</div>
+                    ${idx < (data.roadmap?.length || 3) - 1 ? '<div class="w-px flex-1 bg-primary/20 my-1"></div>' : ''}
+                </div>
+                <div class="pb-4">
+                    <p class="text-slate-300 text-sm font-medium mt-1">${step}</p>
+                </div>
+            `;
+            roadmapList.appendChild(div);
+        });
+
+        // Render Resources
+        resourceList.innerHTML = '';
+        (data.resources || [{ label: 'GitHub Guides', url: 'https://github.com/git-guides' }]).forEach(res => {
+            const a = document.createElement('a');
+            a.href = res.url;
+            a.target = '_blank';
+            a.className = 'p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-primary/10 transition-all flex items-center gap-3 group';
+            a.innerHTML = `
+                <span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">open_in_new</span>
+                <span class="text-xs font-bold text-slate-300">${res.label}</span>
+            `;
+            resourceList.appendChild(a);
+        });
+
+        // Render Presentation Tips
+        presentationTips.innerHTML = '';
+        (data.presentationTips || ['Start with a strong hook', 'Focus on the problem you solve']).forEach(tip => {
+            const div = document.createElement('div');
+            div.className = 'flex items-start gap-3 p-4 bg-white/5 border border-white/5 rounded-xl fade-in';
+            div.innerHTML = `
+                <span class="material-symbols-outlined text-amber-500 text-sm">tips_and_updates</span>
+                <p class="text-xs text-slate-400 leading-relaxed">${tip}</p>
+            `;
+            presentationTips.appendChild(div);
+        });
+
+        // Set Initial Insight
+        aiInsightBox.innerHTML = data.initialInsight || "Welcome to your new project! I've analyzed your requirements and generated a structure optimized for scale and performance.";
+
+        // Reset to structure tab
+        switchTab(tabStructure, viewStructure);
     }
 
     function renderFileTree(folders) {

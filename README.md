@@ -12,6 +12,8 @@
 - **Persistent History**: Keeps your last 20 generations saved locally in your browser.
 - **Full PWA Support**: Install it on your Desktop or Mobile for a native-app experience, complete with offline support via Service Workers.
 - **Interactive Previews**: Preview generated file content in a sleek, glassmorphism modal before downloading.
+- **Project Success Suite**: Includes an AI-generated **Roadmap**, curated **Resources**, and professional **Presentation Tips**.
+- **Project Assistant**: An interactive AI chat assistant to help you navigate and optimize your generated structure.
 - **One-Click Export**: Download your entire architecture as a structured `.zip` file instantly.
 
 ## 🛠️ Technology Stack

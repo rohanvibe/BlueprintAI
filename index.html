@@ -162,35 +162,63 @@
                     <span class="material-symbols-outlined text-5xl text-emerald-500">check_circle</span>
                 </div>
                 <h2 id="result-project-name" class="text-3xl font-bold mb-2">Project Ready</h2>
-                <p class="text-slate-400 max-w-md mx-auto text-sm">Your architecture is complete. Explore the files or
-                    download the full ZIP.</p>
+                <div class="flex items-center justify-center gap-2 mt-4">
+                    <button id="tab-structure"
+                        class="px-4 py-2 text-sm font-bold border-b-2 border-primary text-primary transition-all">Structure</button>
+                    <button id="tab-roadmap"
+                        class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-primary transition-all">Roadmap</button>
+                    <button id="tab-presentation"
+                        class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-primary transition-all">Presentation</button>
+                </div>
             </div>
 
-            <div class="w-full grid md:grid-cols-2 gap-8 mb-10">
+            <div id="view-structure" class="w-full grid md:grid-cols-2 gap-8 mb-10">
                 <!-- Summary Card -->
-                <div class="bg-white/5 border border-primary/10 rounded-2xl p-6 h-fit glass">
-                    <h3 class="text-xs font-bold uppercase tracking-widest text-primary mb-4">Architecture Highlights
-                    </h3>
-                    <ul id="ai-summary-list" class="space-y-3 text-sm text-slate-300">
-                        <!-- Dynamic Highlights -->
-                    </ul>
-                    <div class="mt-8 pt-6 border-t border-primary/10 flex flex-col gap-3">
-                        <button id="download-zip-btn"
-                            class="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl bg-primary hover:bg-primary/90 text-white transition-all font-bold shadow-xl shadow-primary/30">
-                            <span class="material-symbols-outlined">download</span>
-                            Download Project ZIP
-                        </button>
-                        <button id="restart-btn"
-                            class="text-slate-500 text-sm font-medium hover:text-slate-300 transition-colors flex items-center justify-center gap-2">
-                            <span class="material-symbols-outlined text-sm">refresh</span>
-                            Create New Project
-                        </button>
+                <div class="flex flex-col gap-6">
+                    <div class="bg-white/5 border border-primary/10 rounded-2xl p-6 h-fit glass">
+                        <h3 class="text-xs font-bold uppercase tracking-widest text-primary mb-4">Architecture
+                            Highlights</h3>
+                        <ul id="ai-summary-list" class="space-y-3 text-sm text-slate-300">
+                            <!-- Dynamic Highlights -->
+                        </ul>
+                        <div class="mt-8 pt-6 border-t border-primary/10 flex flex-col gap-3">
+                            <button id="download-zip-btn"
+                                class="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl bg-primary hover:bg-primary/90 text-white transition-all font-bold shadow-xl shadow-primary/30">
+                                <span class="material-symbols-outlined">download</span>
+                                Download Project ZIP
+                            </button>
+                            <button id="restart-btn"
+                                class="text-slate-500 text-sm font-medium hover:text-slate-300 transition-colors flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined text-sm">refresh</span>
+                                Create New Project
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- AI Assistant Insight Chat Area -->
+                    <div class="bg-slate-900/50 border border-primary/10 rounded-2xl p-6 glass flex flex-col gap-4">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-primary">smart_toy</span>
+                            <h3 class="text-sm font-bold">Project Assistant</h3>
+                        </div>
+                        <div id="ai-insight-box"
+                            class="text-sm text-slate-400 leading-relaxed italic border-l-2 border-primary/30 pl-4">
+                            <!-- AI initial insight goes here -->
+                        </div>
+                        <div class="relative mt-2">
+                            <input id="chat-input" type="text" placeholder="Ask about this structure..."
+                                class="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-4 pr-12 text-sm focus:ring-1 focus:ring-primary outline-none">
+                            <button id="send-chat"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-all">
+                                <span class="material-symbols-outlined">send</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Explorer Card -->
                 <div
-                    class="bg-slate-900/40 border border-slate-800 rounded-2xl overflow-hidden flex flex-col h-[500px]">
+                    class="bg-slate-900/40 border border-slate-800 rounded-2xl overflow-hidden flex flex-col h-[600px]">
                     <div class="px-4 py-3 bg-slate-900/60 border-b border-slate-800 flex items-center justify-between">
                         <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">File Explorer</span>
                         <div class="flex gap-1.5">
@@ -201,6 +229,41 @@
                     </div>
                     <div id="file-explorer" class="flex-1 overflow-y-auto p-4 font-mono text-sm scrollbar-thin">
                         <!-- Folder Tree will be injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Roadmap View -->
+            <div id="view-roadmap" class="hidden w-full max-w-2xl space-y-6 mb-10 fade-in">
+                <div class="bg-white/5 border border-primary/10 rounded-2xl p-8 glass">
+                    <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">checklist</span>
+                        Implementation Roadmap
+                    </h3>
+                    <div id="roadmap-list" class="space-y-6">
+                        <!-- Roadmap steps -->
+                    </div>
+                </div>
+                <div class="bg-white/5 border border-primary/10 rounded-2xl p-8 glass">
+                    <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">link</span>
+                        Recommended Resources
+                    </h3>
+                    <div id="resource-list" class="grid sm:grid-cols-2 gap-4">
+                        <!-- Resources -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Presentation View -->
+            <div id="view-presentation" class="hidden w-full max-w-2xl space-y-6 mb-10 fade-in">
+                <div class="bg-white/5 border border-primary/10 rounded-2xl p-8 glass">
+                    <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">co_present</span>
+                        Presentation & Pitch Tips
+                    </h3>
+                    <div id="presentation-tips" class="space-y-4">
+                        <!-- Tips -->
                     </div>
                 </div>
             </div>
