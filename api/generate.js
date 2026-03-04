@@ -19,7 +19,7 @@ module.exports = async (req, res) => {
         return res.status(405).json({ error: "Method not allowed" });
     }
 
-    const { idea } = req.body;
+    const { idea, techStack } = req.body;
     const apiKey = (process.env.SAMBANOVA_API_KEY || "").trim();
 
     if (!apiKey) {
@@ -32,12 +32,13 @@ module.exports = async (req, res) => {
             baseURL: "https://api.sambanova.ai/v1",
         });
 
-        const prompt = `Act as BlueprintAI. Create a logical and detailed project structure for the following idea: "${idea}".
+        const prompt = `Act as BlueprintAI. Create a logical and detailed project structure for the following idea: "${idea}" using the tech stack: "${techStack || 'Standard Web'}".
         
         CRITICAL INSTRUCTIONS:
         1. Match the NATURE of the project. If it is a school project, use appropriate folders (e.g., research, diagrams, assets) and file types (e.g., .txt, .md, .pdf-placeholder).
         2. DO NOT assume this is a software development project unless the user mentions coding, apps, or specific programming languages.
         3. Provide high-quality, realistic starter content for every file created.
+        4. Generate a 'diagram' using Mermaid.js Gantt or Flowchart syntax.
         
         Return ONLY a raw JSON object with NO markdown, NO backticks.
         {
@@ -46,7 +47,9 @@ module.exports = async (req, res) => {
           "roadmap": ["Step 1", "Step 2", "Step 3"],
           "resources": [ { "label": "Resource Name", "url": "https://..." } ],
           "presentationTips": ["Tip 1", "Tip 2"],
-          "initialInsight": "Brief expert commentary."
+          "initialInsight": "Brief expert commentary.",
+          "scorecard": { "feasibility": 1-100, "complexity": 1-100, "rating": "A-TIER/B-TIER/S-TIER" },
+          "diagram": "mermaid syntax string starting with graph TD"
         }`;
 
         const response = await client.chat.completions.create({

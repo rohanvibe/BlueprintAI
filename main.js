@@ -67,7 +67,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatInput = document.getElementById('chat-input');
     const sendChat = document.getElementById('send-chat');
 
+    // Advanced Feature Elements
+    const tabDiagram = document.getElementById('tab-diagram');
+    const viewDiagram = document.getElementById('view-diagram');
+    const techChips = document.querySelectorAll('.tech-chip');
+    const voiceBtn = document.getElementById('voice-btn');
+    const scoreFeasibility = document.getElementById('score-feasibility');
+    const scoreComplexity = document.getElementById('score-complexity');
+    const projectRating = document.getElementById('project-rating');
+    const mermaidContainer = document.getElementById('mermaid-container');
+
     let currentProjectData = null;
+    let selectedTech = 'Web (Vanilla JS)';
 
     // --- State Management ---
     const PROMPT_LIMIT = 5;
@@ -206,6 +217,61 @@ document.addEventListener('DOMContentLoaded', () => {
     tabStructure.onclick = () => switchTab(tabStructure, viewStructure);
     tabRoadmap.onclick = () => switchTab(tabRoadmap, viewRoadmap);
     tabPresentation.onclick = () => switchTab(tabPresentation, viewPresentation);
+    tabDiagram.onclick = () => {
+        switchTab(tabDiagram, viewDiagram);
+        if (currentProjectData?.diagram) {
+            renderMermaid();
+        }
+    };
+
+    // --- Tech Selection ---
+    techChips.forEach(chip => {
+        chip.onclick = () => {
+            techChips.forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            selectedTech = chip.dataset.tech;
+        };
+    });
+
+    // --- Voice Input Logic ---
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        voiceBtn.onclick = () => {
+            recognition.start();
+            voiceBtn.classList.add('text-primary', 'animate-pulse');
+        };
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            projectIdea.value = (projectIdea.value + ' ' + transcript).trim();
+            voiceBtn.classList.remove('text-primary', 'animate-pulse');
+        };
+
+        recognition.onerror = () => voiceBtn.classList.remove('text-primary', 'animate-pulse');
+        recognition.onend = () => voiceBtn.classList.remove('text-primary', 'animate-pulse');
+    } else {
+        voiceBtn.style.display = 'none';
+    }
+
+    // --- Mermaid Rendering ---
+    function renderMermaid() {
+        if (!currentProjectData?.diagram) return;
+        mermaidContainer.innerHTML = currentProjectData.diagram;
+        mermaidContainer.classList.remove('ready');
+        try {
+            mermaid.contentLoaded();
+            setTimeout(() => {
+                mermaid.init(undefined, mermaidContainer);
+                mermaidContainer.classList.add('ready');
+            }, 50);
+        } catch (e) {
+            console.error('Mermaid render error:', e);
+        }
+    }
 
     // --- Project Assistant Logic ---
     async function askAssistant(question) {
@@ -257,12 +323,13 @@ document.addEventListener('DOMContentLoaded', () => {
     chatInput.onkeydown = (e) => { if (e.key === 'Enter') askAssistant(chatInput.value); };
 
     async function generateDirectly(idea, apiKey) {
-        const prompt = `Act as BlueprintAI. Create a logical and detailed project structure for the following idea: "${idea}".
+        const prompt = `Act as BlueprintAI. Create a logical and detailed project structure for the following idea: "${idea}" using tech stack: "${selectedTech}".
         
         CRITICAL INSTRUCTIONS:
         1. Match the NATURE of the project. If it is a school project, use appropriate folders (e.g., research, diagrams, assets) and file types (e.g., .txt, .md, .pdf-placeholder).
         2. DO NOT assume this is a software development project unless the user mentions coding, apps, or specific programming languages.
         3. Provide high-quality, realistic starter content for every file created.
+        4. Generate a 'diagram' using Mermaid.js Gantt or Flowchart syntax.
         
         Return ONLY a raw JSON object with NO markdown, NO backticks.
         {
@@ -271,7 +338,9 @@ document.addEventListener('DOMContentLoaded', () => {
           "roadmap": ["Step 1", "Step 2", "Step 3"],
           "resources": [ { "label": "Resource Name", "url": "https://..." } ],
           "presentationTips": ["Tip 1", "Tip 2"],
-          "initialInsight": "Brief expert commentary."
+          "initialInsight": "Brief expert commentary.",
+          "scorecard": { "feasibility": 1-100, "complexity": 1-100, "rating": "A-TIER/B-TIER/S-TIER" },
+          "diagram": "mermaid syntax string starting with graph TD"
         }`;
 
         const response = await fetch("https://api.sambanova.ai/v1/chat/completions", {
@@ -332,7 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const response = await fetch('/api/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ idea })
+                    body: JSON.stringify({ idea, techStack: selectedTech })
                 });
 
                 if (response.status === 404) {
@@ -434,6 +503,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Set Initial Insight
         aiInsightBox.innerHTML = data.initialInsight || "Welcome to your new project! I've analyzed your requirements and generated a structure optimized for scale and performance.";
+
+        // Render Scorecard
+        if (data.scorecard) {
+            projectRating.textContent = data.scorecard.rating || 'A-TIER';
+            scoreFeasibility.style.width = `${data.scorecard.feasibility || 0}%`;
+            scoreComplexity.style.width = `${data.scorecard.complexity || 0}%`;
+        }
 
         // Reset to structure tab
         switchTab(tabStructure, viewStructure);
