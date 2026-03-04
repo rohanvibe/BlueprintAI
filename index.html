@@ -63,7 +63,7 @@
                 <span id="theme-icon"
                     class="material-symbols-outlined text-slate-600 dark:text-slate-400 group-hover:text-primary">dark_mode</span>
             </button>
-            <button class="p-2 hover:bg-primary/10 rounded-lg transition-colors group">
+            <button id="open-settings-nav" class="p-2 hover:bg-primary/10 rounded-lg transition-colors group">
                 <span
                     class="material-symbols-outlined text-slate-600 dark:text-slate-400 group-hover:text-primary">settings</span>
             </button>
@@ -220,25 +220,141 @@
                 </div>
             </div>
         </div>
+
+        <!-- MODAL: BYOK GUIDANCE / USAGE LIMIT -->
+        <div id="byok-modal"
+            class="fixed inset-0 bg-background-dark/90 backdrop-blur-md z-[200] hidden items-center justify-center p-4">
+            <div
+                class="bg-slate-900 border border-primary/20 w-full max-w-md p-8 rounded-3xl flex flex-col gap-6 shadow-2xl shadow-primary/20 text-center scale-in">
+                <div class="size-20 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <span class="material-symbols-outlined text-amber-500 text-5xl">api</span>
+                </div>
+                <h2 class="text-2xl font-black">Daily Limit Reached</h2>
+                <div class="space-y-4 text-slate-400 text-sm leading-relaxed">
+                    <p>You've used your 5 free generations for today. To continue building, please provide your own
+                        <span class="text-primary font-bold">SambaNova API Key</span>.</p>
+                    <div class="bg-white/5 p-4 rounded-2xl text-left border border-white/5 space-y-3">
+                        <p class="font-bold text-slate-200">How to get a key:</p>
+                        <ol class="list-decimal list-inside space-y-2">
+                            <li>Visit <a href="https://cloud.sambanova.ai/" target="_blank"
+                                    class="text-primary hover:underline font-bold">SambaNova Cloud</a></li>
+                            <li>Sign up or log in</li>
+                            <li>Navigate to <span class="text-slate-200 font-medium">API Keys</span></li>
+                            <li>Create and copy your secret key</li>
+                        </ol>
+                    </div>
+                    <p>Paste it in the <span class="text-slate-200 font-medium">Settings</span> panel to continue.</p>
+                </div>
+                <button id="open-settings-from-modal"
+                    class="w-full py-4 bg-primary text-white font-bold rounded-2xl shadow-lg shadow-primary/30 transition-all hover:scale-[1.02] active:scale-95">
+                    Open Settings
+                </button>
+                <button id="close-byok-modal"
+                    class="text-slate-500 hover:text-slate-300 transition-colors text-sm font-medium">
+                    Maybe later
+                </button>
+            </div>
+        </div>
+
+        <!-- MODAL: HISTORY -->
+        <div id="history-modal"
+            class="fixed inset-0 bg-background-dark/80 backdrop-blur-sm z-[150] hidden items-center justify-center p-4">
+            <div
+                class="bg-slate-900 border border-slate-800 w-full max-w-2xl h-[70vh] rounded-3xl flex flex-col overflow-hidden shadow-2xl">
+                <div
+                    class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/95 sticky top-0">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">history</span>
+                        <h2 class="font-bold text-lg">Generation History</h2>
+                    </div>
+                    <button id="close-history" class="p-2 hover:bg-slate-800 rounded-xl transition-colors">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <div id="history-list" class="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin">
+                    <!-- History items injected here -->
+                    <div class="flex flex-col items-center justify-center h-full text-slate-500 gap-4">
+                        <span class="material-symbols-outlined text-6xl opacity-20">history_toggle_off</span>
+                        <p>No history yet. Start architecting!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: SETTINGS -->
+        <div id="settings-modal"
+            class="fixed inset-0 bg-background-dark/80 backdrop-blur-sm z-[150] hidden items-center justify-center p-4">
+            <div
+                class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl flex flex-col overflow-hidden shadow-2xl">
+                <div class="p-6 border-b border-slate-800 flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">settings</span>
+                        <h2 class="font-bold text-lg">Settings</h2>
+                    </div>
+                    <button id="close-settings" class="p-2 hover:bg-slate-800 rounded-xl transition-colors">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <div class="p-8 space-y-8">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">API
+                                Configuration</label>
+                            <div class="relative">
+                                <span
+                                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg">key</span>
+                                <input id="settings-api-key" type="password"
+                                    class="w-full h-12 pl-12 pr-4 bg-white/5 border border-white/10 rounded-2xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm font-mono"
+                                    placeholder="Paste SambaNova Key here..." />
+                            </div>
+                            <p class="text-[10px] text-slate-500 mt-2 px-1 italic">Your key is stored locally in your
+                                browser.</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Usage
+                            Statistics</label>
+                        <div class="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5">
+                            <span class="text-sm">Generations Today</span>
+                            <span id="daily-count-display" class="font-bold text-primary text-xl">0 / 5</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-white/5 space-y-3">
+                        <button id="clear-history-btn"
+                            class="w-full py-3 px-4 border border-red-500/20 text-red-400 text-sm font-bold rounded-xl hover:bg-red-500/5 transition-colors flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-base">delete_sweep</span>
+                            Clear Local History
+                        </button>
+                        <p class="text-[10px] text-slate-600 text-center uppercase tracking-widest font-black pt-4">
+                            Project Architect v1.2</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- Bottom Navigation (As per Ready Design) -->
     <footer id="bottom-nav"
         class="hidden border-t border-primary/20 bg-background-light dark:bg-[#191e33] px-6 py-2 sticky bottom-0 z-50">
         <div class="flex justify-around items-center w-full max-w-lg mx-auto">
-            <a href="#" class="flex flex-col items-center gap-1 text-slate-500 hover:text-primary transition-colors">
+            <button id="open-history-btm"
+                class="flex flex-col items-center gap-1 text-slate-500 hover:text-primary transition-colors">
                 <span class="material-symbols-outlined text-2xl">history</span>
                 <p class="text-[10px] font-bold uppercase tracking-tighter">History</p>
-            </a>
+            </button>
             <a href="#" onclick="location.reload()"
                 class="flex flex-col items-center gap-1 text-primary -mt-6 bg-background-dark border border-primary/20 p-4 rounded-full shadow-lg shadow-primary/30 transform transition-transform hover:scale-110">
                 <span class="material-symbols-outlined text-4xl">home</span>
                 <p class="text-[10px] font-bold uppercase tracking-tighter">Home</p>
             </a>
-            <a href="#" class="flex flex-col items-center gap-1 text-slate-500 hover:text-primary transition-colors">
+            <button id="open-settings-btm"
+                class="flex flex-col items-center gap-1 text-slate-500 hover:text-primary transition-colors">
                 <span class="material-symbols-outlined text-2xl">settings</span>
                 <p class="text-[10px] font-bold uppercase tracking-tighter">Settings</p>
-            </a>
+            </button>
         </div>
     </footer>
 
