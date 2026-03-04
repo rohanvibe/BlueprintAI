@@ -29,7 +29,7 @@
 
 ### 2. Installation
 ```bash
-git clone https://github.com/your-username/BlueprintAI.git
+git clone https://github.com/rohanvibe/BlueprintAI.git
 cd BlueprintAI
 npm install
 ```
