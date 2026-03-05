@@ -267,40 +267,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Mermaid Rendering ---
     function renderMermaid() {
-        if (!currentProjectData?.diagram) return;
+        if (!currentProjectData?.diagram) {
+            mermaidContainer.innerHTML = '<div class="text-slate-400 italic p-8 text-center text-sm">No diagram generated for this specific project idea.</div>';
+            return;
+        }
 
         // Clean the diagram string aggressively
         let diag = currentProjectData.diagram.trim();
-        diag = diag.replace(/^(```mermaid|```)/g, "").replace(/```$/g, "").trim();
+        diag = diag.replace(/^(```mermaid|```|graph TD|flowchart TD)/gi, "").replace(/```$/g, "").trim();
 
-        // Remove potentially breaking characters in labels like [Label (Text)] or [Label "Text"]
-        // Mermaid 11 is sensitive to (), "", [], etc inside labels if not escaped perfectly.
-        // We'll replace them with spaces/dashes to be safe.
+        // Remove special characters that crash Mermaid 11 labels
         diag = diag.replace(/\((.*?)\)/g, ' $1 ')
-            .replace(/["']/g, '');
+            .replace(/["']/g, '')
+            .replace(/[()]/g, ' '); // Catch any remaining stray parens
 
-        // Final fallback if the AI didn't provide a graph start
-        if (!diag.startsWith('graph') && !diag.startsWith('flowchart')) {
-            diag = 'graph TD\n' + diag;
-        }
+        // Always force a clean start
+        diag = 'graph TD\n' + diag;
 
-        // Create a temporary ID to force a fresh render every time
-        const diagId = 'mermaid-' + Math.random().toString(36).substr(2, 9);
-        mermaidContainer.innerHTML = `<div id="${diagId}" class="mermaid-target">${diag}</div>`;
+        // Insert clean code and reset processor
+        mermaidContainer.innerHTML = diag;
         mermaidContainer.removeAttribute('data-processed');
+        mermaidContainer.classList.remove('ready');
 
         try {
             setTimeout(async () => {
-                await mermaid.run({
-                    nodes: [document.getElementById(diagId)]
-                });
-                mermaidContainer.classList.add('ready');
-            }, 100);
+                try {
+                    await mermaid.run({
+                        querySelector: '#mermaid-container'
+                    });
+                    mermaidContainer.classList.add('ready');
+                } catch (renderErr) {
+                    console.error('Mermaid Render Error:', renderErr);
+                    // Fallback UI
+                    mermaidContainer.innerHTML = `
+                        <div class="bg-red-500/5 border border-red-500/20 p-6 rounded-2xl text-xs font-mono text-red-400">
+                            <p class="font-bold mb-4 uppercase tracking-widest text-red-500">Diagram Logic Error</p>
+                            <div class="opacity-70">${diag.split('\n').join('<br>')}</div>
+                        </div>`;
+                    mermaidContainer.classList.add('ready');
+                }
+            }, 50);
         } catch (e) {
-            console.error('Mermaid render error:', e);
-            mermaidContainer.innerHTML = `<div class="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-xs text-red-500 font-mono">
-                Failed to render diagram. Raw code:<br><br>${diag}
-            </div>`;
+            console.error('Mermaid Execution Error:', e);
         }
     }
 
