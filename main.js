@@ -272,21 +272,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Clean the diagram string aggressively
-        let diag = currentProjectData.diagram.trim();
-
-        // Strip out common markdown and wrapper noise
-        diag = diag.replace(/^(```mermaid|```|graph TD|flowchart TD|graph|flowchart)/gi, "").replace(/```$/g, "").trim();
-
-        // Final fallback to ensure it starts with graph TD
-        diag = 'graph TD\n' + diag;
-
-        // Remove special characters that crash Mermaid 11 labels
-        diag = diag.replace(/\((.*?)\)/g, ' $1 ')
+        const diag = 'graph TD\n' + currentProjectData.diagram.trim().replace(/^(```mermaid|```|graph TD|flowchart TD|graph|flowchart)/gi, "").replace(/```$/g, "").trim()
+            .replace(/\((.*?)\)/g, ' $1 ')
             .replace(/["']/g, '')
             .replace(/[()]/g, ' ');
 
-        console.log("Drafting Diagram:", diag);
+        console.log("Rendering Diagram Code:", diag);
+        mermaidContainer.innerHTML = '<div class="text-primary animate-pulse py-10 font-mono text-xs uppercase tracking-widest">Generating Graphics...</div>';
 
         try {
             // Using mermaid.render is the most robust way in v11
