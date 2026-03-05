@@ -209,8 +209,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Tab Switching Logic ---
-    const tabs = [tabStructure, tabRoadmap, tabPresentation, tabDiagram];
-    const views = [viewStructure, viewRoadmap, viewPresentation, viewDiagram];
+    const tabs = [tabStructure, tabDiagram, tabRoadmap, tabPresentation];
+    const views = [viewStructure, viewDiagram, viewRoadmap, viewPresentation];
 
     function switchTab(activeTab, activeView) {
         tabs.forEach(t => {
@@ -229,9 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
     tabPresentation.onclick = () => switchTab(tabPresentation, viewPresentation);
     tabDiagram.onclick = () => {
         switchTab(tabDiagram, viewDiagram);
-        if (currentProjectData?.diagram) {
-            renderMermaid();
-        }
+        renderMermaid();
     };
 
     // --- Tech Selection ---
@@ -286,18 +284,23 @@ document.addEventListener('DOMContentLoaded', () => {
             diag = 'graph TD\n' + diag;
         }
 
-        mermaidContainer.innerHTML = diag;
+        // Create a temporary ID to force a fresh render every time
+        const diagId = 'mermaid-' + Math.random().toString(36).substr(2, 9);
+        mermaidContainer.innerHTML = `<div id="${diagId}" class="mermaid-target">${diag}</div>`;
         mermaidContainer.removeAttribute('data-processed');
 
         try {
             setTimeout(async () => {
                 await mermaid.run({
-                    querySelector: '#mermaid-container'
+                    nodes: [document.getElementById(diagId)]
                 });
                 mermaidContainer.classList.add('ready');
-            }, 50);
+            }, 100);
         } catch (e) {
             console.error('Mermaid render error:', e);
+            mermaidContainer.innerHTML = `<div class="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-xs text-red-500 font-mono">
+                Failed to render diagram. Raw code:<br><br>${diag}
+            </div>`;
         }
     }
 
