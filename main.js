@@ -270,10 +270,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Mermaid Rendering ---
     function renderMermaid() {
         if (!currentProjectData?.diagram) return;
-        mermaidContainer.innerHTML = currentProjectData.diagram;
-        mermaidContainer.classList.remove('ready');
+
+        // Clean the diagram string
+        let diag = currentProjectData.diagram.trim();
+        diag = diag.replace(/^(```mermaid|```)/, "").replace(/```$/, "").trim();
+
+        mermaidContainer.innerHTML = diag;
+        mermaidContainer.removeAttribute('data-processed');
+
         try {
-            mermaid.contentLoaded();
             setTimeout(() => {
                 mermaid.init(undefined, mermaidContainer);
                 mermaidContainer.classList.add('ready');
