@@ -5,11 +5,7 @@
             "destination": "/api/generate"
         },
         {
-            "source": "/api/compare",
-            "destination": "/api/compare"
-        },
-        {
-            "source": "/b/:slug",
+            "source": "/b/(.*)",
             "destination": "/share.html"
         },
         {
