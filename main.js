@@ -77,9 +77,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const openSandboxBtn = document.getElementById('open-sandbox-btn');
     const pushGithubBtn = document.getElementById('push-github-btn');
     const settingsGithubToken = document.getElementById('settings-github-token');
+    const shareBlueprintBtn = document.getElementById('share-blueprint-btn');
 
     let currentProjectData = null;
     let selectedTech = 'Web (Vanilla JS)';
+    let currentIdea = '';
 
     // Seed GitHub Token from Storage
     settingsGithubToken.value = localStorage.getItem('githubToken') || '';
@@ -402,6 +404,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             currentProjectData = data;
+            currentProjectData.idea = idea;
+            currentProjectData.techStack = selectedTech;
             saveToHistory(data);
             if (!apiKey) incrementUsage();
             renderResult(data);
@@ -737,5 +741,30 @@ document.addEventListener('DOMContentLoaded', () => {
             pushGithubBtn.innerHTML = originalText;
             pushGithubBtn.disabled = false;
         }
+    });
+
+    // --- Share Blueprint ---
+    shareBlueprintBtn.addEventListener('click', () => {
+        if (!currentProjectData) return;
+
+        const slug = (currentProjectData.projectName || 'blueprint')
+            .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        const shareId = slug + '-' + Date.now().toString(36);
+
+        // Save a shareable payload to localStorage (the share page reads this)
+        const payload = { ...currentProjectData, id: shareId };
+        localStorage.setItem('blueprint_share_' + shareId, JSON.stringify(payload));
+
+        const shareUrl = `${location.origin}/b/${slug}?id=${shareId}`;
+
+        // Copy link to clipboard and notify
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            const orig = shareBlueprintBtn.innerHTML;
+            shareBlueprintBtn.innerHTML = '<span class="material-symbols-outlined text-sm text-emerald-500">check</span> <span class="text-emerald-400">Link Copied!</span>';
+            setTimeout(() => { shareBlueprintBtn.innerHTML = orig; }, 2500);
+        });
+
+        // Also open the share page in a new tab
+        window.open(`/b/${slug}?id=${shareId}`, '_blank');
     });
 });

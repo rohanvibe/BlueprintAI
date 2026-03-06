@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#101322">
+    <title>Architecture Battle | BlueprintAI</title>
+    <meta name="description" content="Compare two project ideas head-to-head with AI-powered analysis.">
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@400,0&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css">
+    <script id="tw-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: { extend: { colors: { primary: "#2b4bee" }, fontFamily: { display: ["Inter", "sans-serif"], mono: ["JetBrains Mono", "monospace"] } } }
+        }
+    </script>
+    <style>
+        .battle-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .winner-card {
+            border-color: rgba(43, 75, 238, 0.5);
+            box-shadow: 0 0 30px rgba(43, 75, 238, 0.15);
+        }
+
+        .bar-wrap {
+            height: 6px;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 1.2s ease;
+        }
+
+        .tech-chip {
+            padding: 0.4rem 0.8rem;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #64748b;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .tech-chip.active {
+            background: var(--primary, #2b4bee);
+            border-color: var(--primary, #2b4bee);
+            color: white;
+        }
+
+        :root {
+            --primary: #2b4bee;
+        }
+    </style>
+</head>
+
+<body class="bg-[#101322] font-display text-slate-100 min-h-screen">
+
+    <!-- Nav -->
+    <nav
+        class="flex items-center justify-between px-6 py-4 border-b border-white/5 sticky top-0 z-50 bg-[#101322]/80 backdrop-blur-md">
+        <a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <span class="material-symbols-outlined text-primary text-2xl">architecture</span>
+            <span class="font-bold tracking-tight text-lg">BlueprintAI</span>
+        </a>
+        <div class="flex items-center gap-3">
+            <a href="/explore" class="text-slate-400 hover:text-white text-sm font-medium transition-colors">Explore</a>
+            <a href="/"
+                class="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors">
+                <span class="material-symbols-outlined text-sm">add</span>New Blueprint
+            </a>
+        </div>
+    </nav>
+
+    <!-- Input Section -->
+    <section id="input-section" class="max-w-5xl mx-auto px-4 py-12">
+        <div class="text-center mb-12 space-y-3">
+            <div
+                class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold uppercase tracking-wider">
+                <span class="material-symbols-outlined text-sm">swords</span>
+                Architecture Battle
+            </div>
+            <h1 class="text-4xl md:text-5xl font-black tracking-tight">Which Idea Wins?</h1>
+            <p class="text-slate-400 text-lg">Enter two project ideas and let AI pick the stronger architecture.</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <!-- Idea A -->
+            <div class="space-y-4">
+                <div class="flex items-center gap-3 mb-2">
+                    <div
+                        class="size-8 rounded-full bg-primary flex items-center justify-center text-white font-black text-sm">
+                        A</div>
+                    <h2 class="font-bold text-lg">Idea A</h2>
+                </div>
+                <textarea id="idea-a" rows="4" placeholder="e.g. A real-time dashboard for crypto prices..."
+                    class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none placeholder:text-slate-600 resize-none"></textarea>
+                <div class="flex flex-wrap gap-2" id="tech-a">
+                    <button class="tech-chip active" data-tech="Web (Vanilla JS)">Web</button>
+                    <button class="tech-chip" data-tech="React/Next.js">React</button>
+                    <button class="tech-chip" data-tech="Python/FastAPI">Python</button>
+                    <button class="tech-chip" data-tech="Node.js/Express">Node.js</button>
+                    <button class="tech-chip" data-tech="Mobile App">Mobile</button>
+                </div>
+            </div>
+            <!-- Idea B -->
+            <div class="space-y-4">
+                <div class="flex items-center gap-3 mb-2">
+                    <div
+                        class="size-8 rounded-full bg-amber-500 flex items-center justify-center text-white font-black text-sm">
+                        B</div>
+                    <h2 class="font-bold text-lg">Idea B</h2>
+                </div>
+                <textarea id="idea-b" rows="4" placeholder="e.g. An AI-powered recipe suggestion app..."
+                    class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none placeholder:text-slate-600 resize-none"></textarea>
+                <div class="flex flex-wrap gap-2" id="tech-b">
+                    <button class="tech-chip active" data-tech="Web (Vanilla JS)">Web</button>
+                    <button class="tech-chip" data-tech="React/Next.js">React</button>
+                    <button class="tech-chip" data-tech="Python/FastAPI">Python</button>
+                    <button class="tech-chip" data-tech="Node.js/Express">Node.js</button>
+                    <button class="tech-chip" data-tech="Mobile App">Mobile</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <button id="compare-btn"
+                class="px-10 py-4 bg-primary hover:bg-primary/90 text-white font-black text-lg rounded-2xl transition-all shadow-2xl shadow-primary/30 active:scale-95 flex items-center gap-3 mx-auto">
+                <span class="material-symbols-outlined">swords</span>
+                Start the Battle
+            </button>
+        </div>
+    </section>
+
+    <!-- Loading -->
+    <div id="loading-section" class="hidden text-center py-24">
+        <div class="size-20 bg-primary/10 rounded-full flex items-center justify-center mb-6 mx-auto">
+            <span class="material-symbols-outlined text-4xl text-primary animate-spin">swords</span>
+        </div>
+        <h2 class="text-2xl font-bold mb-2">Analyzing Both Ideas...</h2>
+        <p class="text-slate-500 text-sm">AI is evaluating feasibility, complexity, and architecture quality</p>
+    </div>
+
+    <!-- Results -->
+    <section id="results-section" class="hidden max-w-5xl mx-auto px-4 pb-16">
+
+        <div class="text-center mb-10 space-y-3">
+            <h2 class="text-3xl font-black tracking-tight">Battle Results</h2>
+            <div id="verdict-box"
+                class="inline-block px-6 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-emerald-400 text-sm font-medium max-w-xl">
+            </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <!-- Card A -->
+            <div id="card-a" class="battle-card p-6 space-y-5">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="size-8 rounded-full bg-primary flex items-center justify-center text-white font-black text-sm">
+                            A</div>
+                        <h3 id="name-a" class="font-bold text-lg"></h3>
+                    </div>
+                    <div id="winner-badge-a"
+                        class="hidden text-xs font-black px-3 py-1 rounded-full bg-primary text-white">WINNER 🏆</div>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-xs text-slate-500 mb-1"><span>Feasibility</span><span
+                                id="f-a">—</span></div>
+                        <div class="bar-wrap">
+                            <div id="fbar-a" class="bar-fill bg-primary" style="width:0%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs text-slate-500 mb-1"><span>Complexity</span><span
+                                id="c-a">—</span></div>
+                        <div class="bar-wrap">
+                            <div id="cbar-a" class="bar-fill bg-amber-500" style="width:0%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 text-center">
+                    <div class="p-3 bg-white/5 rounded-xl">
+                        <div class="text-xs text-slate-500 mb-1">Build Time</div>
+                        <div id="bt-a" class="text-sm font-bold">—</div>
+                    </div>
+                    <div class="p-3 bg-white/5 rounded-xl">
+                        <div class="text-xs text-slate-500 mb-1">Skill Level</div>
+                        <div id="sl-a" class="text-sm font-bold">—</div>
+                    </div>
+                    <div class="p-3 bg-white/5 rounded-xl">
+                        <div class="text-xs text-slate-500 mb-1">Folders</div>
+                        <div id="fc-a" class="text-sm font-bold">—</div>
+                    </div>
+                    <div class="p-3 bg-white/5 rounded-xl">
+                        <div class="text-xs text-slate-500 mb-1">Files</div>
+                        <div id="ff-a" class="text-sm font-bold">—</div>
+                    </div>
+                </div>
+                <div id="strengths-a" class="space-y-1"></div>
+            </div>
+            <!-- Card B -->
+            <div id="card-b" class="battle-card p-6 space-y-5">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="size-8 rounded-full bg-amber-500 flex items-center justify-center text-white font-black text-sm">
+                            B</div>
+                        <h3 id="name-b" class="font-bold text-lg"></h3>
+                    </div>
+                    <div id="winner-badge-b"
+                        class="hidden text-xs font-black px-3 py-1 rounded-full bg-amber-500 text-white">WINNER 🏆</div>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-xs text-slate-500 mb-1"><span>Feasibility</span><span
+                                id="f-b">—</span></div>
+                        <div class="bar-wrap">
+                            <div id="fbar-b" class="bar-fill bg-primary" style="width:0%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs text-slate-500 mb-1"><span>Complexity</span><span
+                                id="c-b">—</span></div>
+                        <div class="bar-wrap">
+                            <div id="cbar-b" class="bar-fill bg-amber-500" style="width:0%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 text-center">
+                    <div class="p-3 bg-white/5 rounded-xl">
+                        <div class="text-xs text-slate-500 mb-1">Build Time</div>
+                        <div id="bt-b" class="text-sm font-bold">—</div>
+                    </div>
+                    <div class="p-3 bg-white/5 rounded-xl">
+                        <div class="text-xs text-slate-500 mb-1">Skill Level</div>
+                        <div id="sl-b" class="text-sm font-bold">—</div>
+                    </div>
+                    <div class="p-3 bg-white/5 rounded-xl">
+                        <div class="text-xs text-slate-500 mb-1">Folders</div>
+                        <div id="fc-b" class="text-sm font-bold">—</div>
+                    </div>
+                    <div class="p-3 bg-white/5 rounded-xl">
+                        <div class="text-xs text-slate-500 mb-1">Files</div>
+                        <div id="ff-b" class="text-sm font-bold">—</div>
+                    </div>
+                </div>
+                <div id="strengths-b" class="space-y-1"></div>
+            </div>
+        </div>
+
+        <div class="text-center flex flex-col sm:flex-row gap-4 justify-center">
+            <button id="new-battle-btn"
+                class="px-6 py-3 border border-white/10 text-slate-400 hover:text-white rounded-xl text-sm font-bold transition-colors">
+                Try Another Battle
+            </button>
+            <a href="/"
+                class="px-6 py-3 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary/90 transition-colors text-center">
+                Build the Winner Blueprint →
+            </a>
+        </div>
+    </section>
+
+    <script>
+        let techA = 'Web (Vanilla JS)', techB = 'Web (Vanilla JS)';
+
+        // Tech chip selection
+        document.getElementById('tech-a').addEventListener('click', e => {
+            if (!e.target.classList.contains('tech-chip')) return;
+            document.querySelectorAll('#tech-a .tech-chip').forEach(c => c.classList.remove('active'));
+            e.target.classList.add('active');
+            techA = e.target.dataset.tech;
+        });
+        document.getElementById('tech-b').addEventListener('click', e => {
+            if (!e.target.classList.contains('tech-chip')) return;
+            document.querySelectorAll('#tech-b .tech-chip').forEach(c => c.classList.remove('active'));
+            e.target.classList.add('active');
+            techB = e.target.dataset.tech;
+        });
+
+        document.getElementById('compare-btn').addEventListener('click', async () => {
+            const ideaA = document.getElementById('idea-a').value.trim();
+            const ideaB = document.getElementById('idea-b').value.trim();
+            if (!ideaA || !ideaB) { alert('Please enter both project ideas!'); return; }
+
+            document.getElementById('input-section').classList.add('hidden');
+            document.getElementById('loading-section').classList.remove('hidden');
+            document.getElementById('results-section').classList.add('hidden');
+
+            try {
+                const apiKey = localStorage.getItem('userApiKey') || '';
+                let data;
+
+                if (apiKey) {
+                    const prompt = `You are BlueprintAI. Compare these two project ideas as a senior architect.\nIdea A: "${ideaA}" (Tech: ${techA})\nIdea B: "${ideaB}" (Tech: ${techB})\nReturn ONLY raw JSON: { "projectA": {"name":"...","complexity":0-100,"feasibility":0-100,"buildTime":"...","skillLevel":"...","folderCount":0,"fileCount":0,"strengths":["..."],"weaknesses":["..."]}, "projectB": {same schema}, "winner":"A or B","verdict":"one sentence" }`;
+                    const r = await fetch("https://api.sambanova.ai/v1/chat/completions", {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ model: "Meta-Llama-3.3-70B-Instruct", messages: [{ role: "user", content: prompt }], temperature: 0.2 })
+                    });
+                    const res = await r.json();
+                    let txt = res.choices[0].message.content.trim().replace(/```json|```/g, '').trim();
+                    data = JSON.parse(txt);
+                } else {
+                    const r = await fetch('/api/compare', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ideaA, techA, ideaB, techB })
+                    });
+                    data = await r.json();
+                }
+
+                if (data.error) throw new Error(data.error);
+                renderResults(data);
+            } catch (e) {
+                alert('Error: ' + e.message);
+                document.getElementById('input-section').classList.remove('hidden');
+                document.getElementById('loading-section').classList.add('hidden');
+            }
+        });
+
+        function renderResults(data) {
+            document.getElementById('loading-section').classList.add('hidden');
+            document.getElementById('results-section').classList.remove('hidden');
+
+            const pA = data.projectA, pB = data.projectB;
+            document.getElementById('verdict-box').textContent = data.verdict || '';
+
+            // Fill A
+            document.getElementById('name-a').textContent = pA.name;
+            document.getElementById('f-a').textContent = pA.feasibility + '%';
+            document.getElementById('c-a').textContent = pA.complexity + '%';
+            document.getElementById('bt-a').textContent = pA.buildTime;
+            document.getElementById('sl-a').textContent = pA.skillLevel;
+            document.getElementById('fc-a').textContent = pA.folderCount;
+            document.getElementById('ff-a').textContent = pA.fileCount;
+            pA.strengths?.forEach(s => { document.getElementById('strengths-a').innerHTML += `<div class="flex items-start gap-2 text-xs text-slate-400"><span class="material-symbols-outlined text-emerald-500 text-xs mt-0.5">check</span>${s}</div>`; });
+
+            // Fill B
+            document.getElementById('name-b').textContent = pB.name;
+            document.getElementById('f-b').textContent = pB.feasibility + '%';
+            document.getElementById('c-b').textContent = pB.complexity + '%';
+            document.getElementById('bt-b').textContent = pB.buildTime;
+            document.getElementById('sl-b').textContent = pB.skillLevel;
+            document.getElementById('fc-b').textContent = pB.folderCount;
+            document.getElementById('ff-b').textContent = pB.fileCount;
+            pB.strengths?.forEach(s => { document.getElementById('strengths-b').innerHTML += `<div class="flex items-start gap-2 text-xs text-slate-400"><span class="material-symbols-outlined text-emerald-500 text-xs mt-0.5">check</span>${s}</div>`; });
+
+            // Winner Highlight
+            setTimeout(() => {
+                document.getElementById('fbar-a').style.width = pA.feasibility + '%';
+                document.getElementById('cbar-a').style.width = pA.complexity + '%';
+                document.getElementById('fbar-b').style.width = pB.feasibility + '%';
+                document.getElementById('cbar-b').style.width = pB.complexity + '%';
+            }, 100);
+
+            if (data.winner === 'A') {
+                document.getElementById('card-a').classList.add('winner-card');
+                document.getElementById('winner-badge-a').classList.remove('hidden');
+            } else {
+                document.getElementById('card-b').classList.add('winner-card');
+                document.getElementById('winner-badge-b').classList.remove('hidden');
+            }
+        }
+
+        document.getElementById('new-battle-btn').addEventListener('click', () => {
+            document.getElementById('results-section').classList.add('hidden');
+            document.getElementById('input-section').classList.remove('hidden');
+        });
+    </script>
+</body>
+
+</html>
